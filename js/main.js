@@ -1,9 +1,76 @@
+var Zombie = function (index, game, player) {
+
+  var x = game.world.randomX;
+  var y = game.world.randomY;
+
+  this.game = game;
+  this.health = 3;
+  this.player = player;
+  this.alive = true;
+
+  this.zombie = game.add.sprite(x, y, 'ball');
+
+  this.zombie.anchor.set(0.5);
+
+  this.zombie.name = index.toString();
+  game.physics.enable(this.zombie, Phaser.Physics.ARCADE);
+  this.zombie.body.immovable = false;
+  this.zombie.body.collideWorldBounds = true;
+  this.zombie.body.bounce.setTo(0.1, 0.1);
+  
+  this.zombie.angle = game.rnd.angle(); // random angle
+
+  // game.physics.arcade.velocityFromRotation(this.zombie.rotation, 100, this.zombie.body.velocity);
+
+};
+
+Zombie.prototype.damage = function () {
+
+  this.health -= 1;
+  if (this.health <= 0) {
+    this.alive = false;
+    this.zombie.kill();
+    return true;
+  }
+  return false;
+
+};
+
+// INCOMPLETE 
+// Zombie.prototype.update = function() {
+
+//   this.shadow.x = this.tank.x;
+//   this.shadow.y = this.tank.y;
+//   this.shadow.rotation = this.tank.rotation;
+
+//   this.turret.x = this.tank.x;
+//   this.turret.y = this.tank.y;
+//   this.turret.rotation = this.game.physics.arcade.angleBetween(this.tank, this.player);
+      
+//   // shoot and follow
+//   if (this.game.physics.arcade.distanceBetween(this.tank, this.player) < 300)
+//   {
+//       if (this.game.time.now > this.nextFire && this.bullets.countDead() > 0)
+//       {
+//           this.nextFire = this.game.time.now + this.fireRate;
+
+//           var bullet = this.bullets.getFirstDead();
+
+//           bullet.reset(this.turret.x, this.turret.y);
+
+//           bullet.rotation = this.game.physics.arcade.moveToObject(bullet, this.player, 500);
+//       }
+//   }
+
+// };
+
 var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
 
 function preload () {
   
   game.load.image('bullet', 'assets/bullet.png');
   game.load.image('light_sand', 'assets/light_sand.png');
+  game.load.image('ball', 'assets/ball.png');
   game.load.spritesheet('kaboom', 'assets/explosion.png', 64, 64, 23);
   
   // new player 1 sprite
@@ -18,9 +85,13 @@ var floor;
 var player;
 var moveSpeed = 200; // speed which player moves
 
+var zombies;
+var zombiesAlive = 0;
+var zombiesTotal;
+
 // shooting
 var bullets;
-var fireRate = 100;
+var fireRate = 150;
 var nextFire = 0;
 var bulletSpeed = 600; 
 
@@ -56,6 +127,14 @@ function create () {
   bullets.setAll('outOfBoundsKill', true);
   bullets.setAll('checkWorldBounds', true);
 
+
+  // Create Zombies 
+  zombies = [];
+  zombiesTotal = 5;
+  for (var i = 0; i < zombiesTotal; i++) {
+    zombies.push(new Zombie(i, game, player));
+  }
+  
   
   // Camera related 
   player.bringToTop();    
@@ -79,6 +158,18 @@ function create () {
 */
 function update () {
 
+  // kill zombies
+  zombiesAlive = 0;
+  for (var i = 0; i < zombies.length; i++) {
+    if (zombies[i].alive) {
+      zombiesAlive++;
+      game.physics.arcade.collide(player, zombies[i].player);
+      game.physics.arcade.overlap(bullets, zombies[i].zombie, bulletHitEnemy, null, this);
+      // zombies[i].update();
+    }
+  }
+  
+  
   // --- Player input/movement ---
   // Movement done through velocity, not position
   // Velocity is 0 if no key is pressed
@@ -115,7 +206,7 @@ function update () {
   floor.tilePosition.y = -game.camera.y;
 
 
-  // debug 
+  // // debug 
   // var refreshRate = 10000;
   // var nextCheck = 0;
   // if (game.time.time > nextCheck) {
@@ -132,7 +223,8 @@ function fireBullet () {
     
     var bullet = bullets.getFirstExists(false);
     
-    if (bullet) {
+    if (bullet) 
+    {
       nextFire = game.time.time + fireRate;
       bullet.reset(player.x, player.y);
       bullet.angle = player.angle - 90;
@@ -170,12 +262,24 @@ function fireBullet () {
   }
 }
 
+function bulletHitEnemy (zombie, bullet) {
+  bullet.kill();
+  var destroyed = zombies[zombie.name].damage(); // returns true if destroyed
+  
+  if (destroyed) {
+    // zombie death animation
+    // var explosionAnimation = explosions.getFirstExists(false);
+    // explosionAnimation.reset(tank.x, tank.y);
+    // explosionAnimation.play('kaboom', 30, false, true);
+  }
+}
+
 
 
 function render () {
 
   game.debug.text('Active Bullets: ' + bullets.countLiving() + ' / ' + bullets.length, 32, 512);
-  // game.debug.text('Enemies: ' + enemiesAlive + ' / ' + enemiesTotal, 32, 32);
+  // game.debug.text('Zombies: ' + zombiesAlive + ' / ' + zombiesTotal, 32, 32);
   
   game.debug.bodyInfo(player, 16, 32);
   // game.debug.bodyInfo(bullets.children[0], 16, 22);
