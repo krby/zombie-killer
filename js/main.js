@@ -37,32 +37,12 @@ Zombie.prototype.damage = function () {
 };
 
 // INCOMPLETE 
-// Zombie.prototype.update = function() {
+Zombie.prototype.update = function() {
 
-//   this.shadow.x = this.tank.x;
-//   this.shadow.y = this.tank.y;
-//   this.shadow.rotation = this.tank.rotation;
+  // follows player
+  this.game.physics.arcade.moveToObject(this.zombie, this.player, 50);
 
-//   this.turret.x = this.tank.x;
-//   this.turret.y = this.tank.y;
-//   this.turret.rotation = this.game.physics.arcade.angleBetween(this.tank, this.player);
-      
-//   // shoot and follow
-//   if (this.game.physics.arcade.distanceBetween(this.tank, this.player) < 300)
-//   {
-//       if (this.game.time.now > this.nextFire && this.bullets.countDead() > 0)
-//       {
-//           this.nextFire = this.game.time.now + this.fireRate;
-
-//           var bullet = this.bullets.getFirstDead();
-
-//           bullet.reset(this.turret.x, this.turret.y);
-
-//           bullet.rotation = this.game.physics.arcade.moveToObject(bullet, this.player, 500);
-//       }
-//   }
-
-// };
+};
 
 var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
 
@@ -130,7 +110,7 @@ function create () {
 
   // Create Zombies 
   zombies = [];
-  zombiesTotal = 5;
+  zombiesTotal = 15;
   for (var i = 0; i < zombiesTotal; i++) {
     zombies.push(new Zombie(i, game, player));
   }
@@ -165,7 +145,7 @@ function update () {
       zombiesAlive++;
       game.physics.arcade.collide(player, zombies[i].player);
       game.physics.arcade.overlap(bullets, zombies[i].zombie, bulletHitEnemy, null, this);
-      // zombies[i].update();
+      zombies[i].update();
     }
   }
   
@@ -267,7 +247,7 @@ function bulletHitEnemy (zombie, bullet) {
   var destroyed = zombies[zombie.name].damage(); // returns true if destroyed
   
   if (destroyed) {
-    // zombie death animation
+    // death animation
     // var explosionAnimation = explosions.getFirstExists(false);
     // explosionAnimation.reset(tank.x, tank.y);
     // explosionAnimation.play('kaboom', 30, false, true);
@@ -279,9 +259,9 @@ function bulletHitEnemy (zombie, bullet) {
 function render () {
 
   game.debug.text('Active Bullets: ' + bullets.countLiving() + ' / ' + bullets.length, 32, 512);
-  // game.debug.text('Zombies: ' + zombiesAlive + ' / ' + zombiesTotal, 32, 32);
+  game.debug.text('Zombies: ' + zombiesAlive + ' / ' + zombiesTotal, 32, 32);
   
-  game.debug.bodyInfo(player, 16, 32);
+  // game.debug.bodyInfo(player, 16, 32);
   // game.debug.bodyInfo(bullets.children[0], 16, 22);
 
 }
