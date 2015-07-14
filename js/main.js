@@ -36,7 +36,6 @@ Zombie.prototype.damage = function () {
 
 };
 
-// INCOMPLETE 
 Zombie.prototype.update = function() {
 
   // follows player
@@ -138,16 +137,28 @@ function create () {
 */
 function update () {
 
-  // kill zombies
+  // iterate and update each zombie (collisions, follow, death)
   zombiesAlive = 0;
   for (var i = 0; i < zombies.length; i++) {
     if (zombies[i].alive) {
       zombiesAlive++;
-      game.physics.arcade.collide(player, zombies[i].player);
+      
+      // check collision zombie and player
+      game.physics.arcade.collide(player, zombies[i].zombie); 
+      
+      // check if zombies collide with other zombies
+      for (var j = 0; j < zombies.length; j++) {
+        if (i !== j) {
+          game.physics.arcade.collide(zombies[j].zombie, zombies[i].zombie);    
+        }
+      }
+      
+      // check if zombie is hit by bullet - it dies
       game.physics.arcade.overlap(bullets, zombies[i].zombie, bulletHitEnemy, null, this);
-      zombies[i].update();
+      zombies[i].update(); 
     }
   }
+
   
   
   // --- Player input/movement ---
