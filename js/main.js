@@ -8,7 +8,7 @@ var Zombie = function (index, game, player) {
   this.player = player;
   this.alive = true;
 
-  this.zombie = game.add.sprite(x, y, 'ball');
+  this.zombie = game.add.sprite(x, y, 'enemy_box');
 
   this.zombie.anchor.set(0.5);
 
@@ -49,11 +49,11 @@ function preload () {
   
   game.load.image('bullet', 'assets/bullet.png');
   game.load.image('light_sand', 'assets/light_sand.png');
-  game.load.image('ball', 'assets/ball.png');
+  game.load.image('enemy_box', 'assets/enemy_box.png');
   game.load.spritesheet('kaboom', 'assets/explosion.png', 64, 64, 23);
   
   // new player 1 sprite
-  game.load.image('invader', 'assets/invader.png');
+  game.load.image('yellow_box', 'assets/yellow_box.png');
 }
 
 
@@ -88,8 +88,8 @@ function create () {
   floor.fixedToCamera = true;
   
   
-  // Player Sprite: invader 
-  player = game.add.sprite(0, 0, 'invader');
+  // Player Sprite: yellow_box 
+  player = game.add.sprite(0, 0, 'yellow_box');
   player.anchor.setTo(0.5, 0.5); // Centers the sprite (half is 0.5)
 
   game.physics.enable(player, Phaser.Physics.ARCADE);
