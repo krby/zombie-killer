@@ -1,22 +1,24 @@
 var Zombie = function (index, game, player) {
 
-  var x = game.world.randomX;
-  var y = game.world.randomY;
+  var x = 0; // center // game.world.randomX;
+  var y = game.world.height/2;
 
   this.game = game;
   this.health = 3;
   this.player = player;
   this.alive = true;
 
-  this.zombie = game.add.sprite(x, y, 'enemy_box');
+  this.zombie = game.add.sprite(x, y, 'enemy_box'); // NOT SPAWNING IN SAID PLACE
+  // console.log('this.zombie.y: ' + this.zombie.y);
+  console.log('this.zombie.position.y: ' + this.zombie.position.y);
 
   this.zombie.anchor.set(0.5);
-
-  this.zombie.name = index.toString();
+  
+  this.zombie.name = index.toString(); // used for accessing each item
   game.physics.enable(this.zombie, Phaser.Physics.ARCADE);
   this.zombie.body.immovable = false;
   this.zombie.body.collideWorldBounds = true;
-  this.zombie.body.bounce.setTo(0.1, 0.1);
+  this.zombie.body.bounce.setTo(0.1, 0.1); // 10% rebound velocity
   
   this.zombie.angle = game.rnd.angle(); // random angle
 
@@ -107,12 +109,13 @@ function create () {
   bullets.setAll('checkWorldBounds', true);
 
 
-  // Create Zombies 
+  // Create zombie array and total 
+  // Instantiation happens during game, in update()
   zombies = [];
-  zombiesTotal = 15;
-  for (var i = 0; i < zombiesTotal; i++) {
-    zombies.push(new Zombie(i, game, player));
-  }
+  zombiesTotal = 5;
+  // for (var i = 0; i < zombiesTotal; i++) {
+  //   zombies.push(new Zombie(i, game, player));
+  // }
   
   
   // Camera related 
@@ -135,7 +138,24 @@ function create () {
   NOTE: sprite.angle is orientation in degrees 
   whereas sprite.body.angle is calculated by its velocity in radians
 */
+
+// Spawning zombies
+var zombieIndex = 0;
+var nextCheck = 0;
+var spawnRate = 1000;
+
 function update () {
+  
+  // Spawn Zombies: during game, not before
+  if (zombieIndex < zombiesTotal) {
+    if (game.time.time > nextCheck) {
+      nextCheck = game.time.time + spawnRate;
+      // populate array zomibes
+      zombies.push(new Zombie(zombieIndex, game, player));
+      zombieIndex++;
+    }
+  }
+  
 
   // iterate and update each zombie (collisions, follow, death)
   zombiesAlive = 0;
@@ -143,7 +163,7 @@ function update () {
     if (zombies[i].alive) {
       zombiesAlive++;
       
-      // check collision zombie and player
+      // check collision player and zombie
       game.physics.arcade.collide(player, zombies[i].zombie); 
       
       // check if zombies collide with other zombies
@@ -159,8 +179,7 @@ function update () {
     }
   }
 
-  
-  
+
   // --- Player input/movement ---
   // Movement done through velocity, not position
   // Velocity is 0 if no key is pressed
@@ -199,7 +218,6 @@ function update () {
 
   // // debug 
   // var refreshRate = 10000;
-  // var nextCheck = 0;
   // if (game.time.time > nextCheck) {
   //   nextCheck = game.time.time + refreshRate;
   //   console.log(player.angle);
@@ -269,10 +287,14 @@ function bulletHitEnemy (zombie, bullet) {
 
 function render () {
 
-  game.debug.text('Active Bullets: ' + bullets.countLiving() + ' / ' + bullets.length, 32, 512);
-  game.debug.text('Zombies: ' + zombiesAlive + ' / ' + zombiesTotal, 32, 32);
+  // game.debug.text('Active Bullets: ' + bullets.countLiving() + ' / ' + bullets.length, 32, 512);
+  game.debug.text('Zombies: ' + zombiesAlive + ' / ' + zombiesTotal, 32, 512);
+  // game.debug.text('Screen: ' + game.world.width + ', ' + game.world.height, 32, 64);
   
-  // game.debug.bodyInfo(player, 16, 32);
+  game.debug.bodyInfo(player, 16, 32);
   // game.debug.bodyInfo(bullets.children[0], 16, 22);
+  // game.debug.bodyInfo(zombies[0], 16, 22); // doesn't work
 
+  // game.debug.text(zombies[0].zombie.y, 32, 32);
+  // console.log('[inside render()] zombies[0].zombie.y: ' + zombies[0].zombie.y);
 }
