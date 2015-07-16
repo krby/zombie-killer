@@ -91,8 +91,12 @@ var bulletSpeed = 600;
 var cursors;
 var fireButton;
 
-// display win or lose text
+// game components
 var stateText;
+// score
+var score = 0;
+var scoreString = '';
+var scoreText;
 
 function create () {
   
@@ -133,10 +137,13 @@ function create () {
   // }
   
   
-  // Text
+  // Game text
   stateText = game.add.text(0, 0, ' ', { font: '34px Monospace', fill: '#fff' });
   stateText.anchor.setTo(0.5, 0.5);
   stateText.visible = false;
+  // Score
+  scoreString = 'Score : ';
+  scoreText = game.add.text(-400 + 32, -300 + 32, scoreString + score, { font: '24px Monospace', fill: '#fff' });
   
   
   // Camera related 
@@ -302,6 +309,9 @@ function fireBullet () {
 function bulletHitEnemy (zombie, bullet) { // zombie passed in first since bullet is from bullets group 
   bullet.kill();
   var destroyed = enemies[zombie.name].damage(); // returns true if destroyed
+  
+  score += 1;
+  scoreText.text = scoreString + score;
   
   if (destroyed) {
     // death animation
